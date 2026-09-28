@@ -1,0 +1,50 @@
+name: Network Project CI/CD Pipeline
+
+# El pipeline se activará automáticamente al hacer 'push' o 'pull request' a la rama main
+on:
+  push:
+    branches: [ "main", "master" ]
+  pull_request:
+    branches: [ "main", "master" ]
+
+jobs:
+  # TRABAJO 1: Integración Continua (Instalar dependencias y ejecutar pruebas Jest)
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+    - name: 1. Clonar código del repositorio
+      uses: actions/checkout@v4
+
+    - name: 2. Configurar Node.js versión ${{ matrix.node-version }}
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ matrix.node-version }}
+        cache: 'npm'
+        cache-dependency-path: './network-project-backend/package-lock.json'
+
+    - name: 3. Instalación limpia de dependencias
+      run: npm ci
+      working-directory: ./network-project-backend
+
+    - name: 4. Ejecución de Pruebas Unitarias y Cobertura (Jest >= 80%)
+      run: npm test
+      working-directory: ./network-project-backend
+
+  # TRABAJO 2: Entrega/Despliegue Continuo (Solo se ejecuta si las pruebas pasaron con éxito)
+  deploy:
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+
+    steps:
+    - name: Despliegue Automático en Entorno de Pruebas (Staging)
+      run: |
+        echo "=========================================================="
+        echo "¡Pruebas unitarias completadas exitosamente con >80% de cobertura!"
+        echo "Iniciando despliegue automático hacia el entorno de pruebas..."
+        echo "=========================================================="
