@@ -28,7 +28,7 @@ jobs:
         cache-dependency-path: './network-project-backend/package-lock.json'
 
     - name: 3. Instalación limpia de dependencias
-      run: npm ci
+      run: npm install
       working-directory: ./network-project-backend
 
     - name: 4. Ejecución de Pruebas Unitarias y Cobertura (Jest >= 80%)
