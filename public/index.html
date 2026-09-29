@@ -1,0 +1,365 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sistema de Gestión de Donaciones</title>
+  <style>
+    * { box-sizing: border-box; font-family: Arial, sans-serif; }
+    body { background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; }
+    .container { width: 100%; max-width: 850px; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    .hidden { display: none !important; }
+    h2, h3 { color: #333; margin-top: 0; }
+    .form-group { margin-bottom: 15px; }
+    label { display: block; margin-bottom: 5px; font-weight: bold; }
+    input, select, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
+    button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; }
+    button:hover { background-color: #0056b3; }
+    .btn-danger { background-color: #dc3545; padding: 6px 12px; width: auto; margin: 0; }
+    .btn-danger:hover { background-color: #bd2130; }
+    .btn-success { background-color: #28a745; padding: 6px 12px; width: auto; margin: 0; }
+    .btn-success:hover { background-color: #218838; }
+    .btn-logout { background-color: #dc3545; width: auto; float: right; margin-top: 0; }
+    .alert { padding: 10px; margin-bottom: 15px; border-radius: 4px; display: none; }
+    .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+    .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+    table { width: 100%; border-collapse: collapse; margin-top: 15px; }
+    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: middle; }
+    th { background-color: #f8f9fa; }
+    .header-panel { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
+    .toggle-text { text-align: center; margin-top: 15px; font-size: 14px; }
+    .toggle-text a { color: #007bff; text-decoration: none; font-weight: bold; cursor: pointer; }
+    .role-badge { background: #e2e3e5; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div id="alertBox" class="alert"></div>
+
+    <!-- VISTA 1: INICIO DE SESIÓN -->
+    <div id="loginSection">
+      <h2>Iniciar Sesión</h2>
+      <form id="loginForm">
+        <div class="form-group">
+          <label for="loginUser">Usuario o Email</label>
+          <input type="text" id="loginUser" required placeholder="Ingresa tu usuario">
+        </div>
+        <div class="form-group">
+          <label for="loginPassword">Contraseña</label>
+          <input type="password" id="loginPassword" required placeholder="Ingresa tu contraseña">
+        </div>
+        <button type="submit">Iniciar Sesión</button>
+      </form>
+      <div class="toggle-text">
+        ¿No tienes una cuenta? <a id="showRegister">Registrarse aquí</a>
+      </div>
+    </div>
+
+    <!-- VISTA 2: REGISTRO -->
+    <div id="registerSection" class="hidden">
+      <h2>Crear Nueva Cuenta</h2>
+      <form id="registerForm">
+        <div class="form-group">
+          <label for="regUser">Nombre de Usuario / Email</label>
+          <input type="text" id="regUser" required placeholder="Crea un usuario o correo">
+        </div>
+        <div class="form-group">
+          <label for="regPassword">Contraseña</label>
+          <input type="password" id="regPassword" required placeholder="Crea una contraseña">
+        </div>
+        <div class="form-group">
+          <label for="regRole">Rol</label>
+          <select id="regRole">
+            <option value="DONANTE">Donante</option>
+            <option value="ADMIN">Administrador</option>
+          </select>
+        </div>
+        <button type="submit">Registrarme</button>
+      </form>
+      <div class="toggle-text">
+        ¿Ya tienes cuenta? <a id="showLogin">Volver a Iniciar Sesión</a>
+      </div>
+    </div>
+
+    <!-- VISTA 3: PANEL DE CONTROL -->
+    <div id="appSection" class="hidden">
+      <div class="header-panel">
+        <div>
+          <h2 style="display:inline;">Panel Principal</h2>
+          <span id="userRoleBadge" class="role-badge"></span>
+        </div>
+        <button class="btn-logout" id="btnLogout">Cerrar Sesión</button>
+      </div>
+
+      <!-- Formulario para Registrar Donación -->
+      <div style="background: #eef2f5; padding: 15px; border-radius: 6px; margin-bottom: 25px;">
+        <h3>Registrar Nueva Donación</h3>
+        <form id="donationForm">
+          <div class="form-group">
+            <label for="concepto">Concepto / Bien</label>
+            <input type="text" id="concepto" required placeholder="Ej. Cobijas térmicas, Alimentos">
+          </div>
+          <div class="form-group">
+            <label for="cantidad">Cantidad</label>
+            <input type="number" id="cantidad" min="1" required placeholder="Ej. 10">
+          </div>
+          <div class="form-group">
+            <label for="categoria">Categoría</label>
+            <input type="text" id="categoria" placeholder="Ej. Ropa, Alimentos, Salud">
+          </div>
+          <button type="submit">Registrar Donación</button>
+        </form>
+      </div>
+
+      <!-- Tabla de Inventario -->
+      <h3>Inventario Disponible</h3>
+      <table>
+        <thead>
+          <tr>
+            <th>ID</th>
+            <th>Concepto</th>
+            <th>Categoría</th>
+            <th>Stock</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="inventoryTable"></tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    const API_URL = 'http://localhost:3000/api';
+
+    const loginSection = document.getElementById('loginSection');
+    const registerSection = document.getElementById('registerSection');
+    const appSection = document.getElementById('appSection');
+    const alertBox = document.getElementById('alertBox');
+    
+    const loginForm = document.getElementById('loginForm');
+    const registerForm = document.getElementById('registerForm');
+    const donationForm = document.getElementById('donationForm');
+    
+    const showRegister = document.getElementById('showRegister');
+    const showLogin = document.getElementById('showLogin');
+    const btnLogout = document.getElementById('btnLogout');
+    const inventoryTable = document.getElementById('inventoryTable');
+    const userRoleBadge = document.getElementById('userRoleBadge');
+
+    // Función para obtener el rol decodificando el JWT
+    function getUserRole() {
+      const token = localStorage.getItem('jwt_token');
+      if (!token) return null;
+      try {
+        const payload = JSON.parse(atob(token.split('.')[1]));
+        return payload.role;
+      } catch (e) {
+        return null;
+      }
+    }
+
+    document.addEventListener('DOMContentLoaded', () => {
+      if (localStorage.getItem('jwt_token')) {
+        mostrarPanelPrincipal();
+      }
+    });
+
+    showRegister.addEventListener('click', () => {
+      loginSection.classList.add('hidden');
+      registerSection.classList.remove('hidden');
+    });
+
+    showLogin.addEventListener('click', () => {
+      registerSection.classList.add('hidden');
+      loginSection.classList.remove('hidden');
+    });
+
+    function showAlert(msg, isError = false) {
+      alertBox.textContent = msg;
+      alertBox.className = `alert ${isError ? 'alert-error' : 'alert-success'}`;
+      alertBox.style.display = 'block';
+      setTimeout(() => alertBox.style.display = 'none', 4000);
+    }
+
+    // Registro
+    registerForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('regUser').value;
+      const password = document.getElementById('regPassword').value;
+      const role = document.getElementById('regRole').value;
+
+      try {
+        const res = await fetch(`${API_URL}/auth/register`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password, role })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al registrar');
+
+        showAlert('¡Cuenta creada con éxito!');
+        registerForm.reset();
+        registerSection.classList.add('hidden');
+        loginSection.classList.remove('hidden');
+      } catch (err) {
+        showAlert(err.message, true);
+      }
+    });
+
+    // Login
+    loginForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const username = document.getElementById('loginUser').value;
+      const password = document.getElementById('loginPassword').value;
+
+      try {
+        const res = await fetch(`${API_URL}/auth/login`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error en login');
+
+        localStorage.setItem('jwt_token', data.token);
+        loginForm.reset();
+        mostrarPanelPrincipal();
+      } catch (err) {
+        showAlert(err.message, true);
+      }
+    });
+
+    btnLogout.addEventListener('click', () => {
+      localStorage.removeItem('jwt_token');
+      appSection.classList.add('hidden');
+      loginSection.classList.remove('hidden');
+    });
+
+    function mostrarPanelPrincipal() {
+      loginSection.classList.add('hidden');
+      registerSection.classList.add('hidden');
+      appSection.classList.remove('hidden');
+      
+      const role = getUserRole();
+      userRoleBadge.textContent = `Rol: ${role || 'Desconocido'}`;
+      cargarInventario();
+    }
+
+    // Cargar Inventario con Acciones según el Rol
+    async function cargarInventario() {
+      const token = localStorage.getItem('jwt_token');
+      const role = getUserRole();
+
+      try {
+        const res = await fetch(`${API_URL}/inventario`, {
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al cargar inventario');
+
+        inventoryTable.innerHTML = '';
+        if (data.inventario && data.inventario.length > 0) {
+          data.inventario.forEach(item => {
+            let accionBtn = '';
+
+            if (role === 'ADMIN') {
+              accionBtn = `<button class="btn-danger" onclick="eliminarItem(${item.id})">Eliminar</button>`;
+            } else {
+              accionBtn = `<button class="btn-success" onclick="solicitarItem(${item.id})">Solicitar</button>`;
+            }
+
+            inventoryTable.innerHTML += `
+              <tr>
+                <td>${item.id}</td>
+                <td>${item.concepto}</td>
+                <td>${item.categoria}</td>
+                <td><strong>${item.stock}</strong></td>
+                <td>${accionBtn}</td>
+              </tr>
+            `;
+          });
+        } else {
+          inventoryTable.innerHTML = `<tr><td colspan="5" style="text-align:center;">No hay elementos en el inventario</td></tr>`;
+        }
+      } catch (err) {
+        showAlert(err.message, true);
+      }
+    }
+
+    // Función para Eliminar Insumo (Solo ADMIN)
+    async function eliminarItem(id) {
+      if (!confirm('¿Seguro que deseas eliminar este elemento del inventario?')) return;
+      const token = localStorage.getItem('jwt_token');
+
+      try {
+        const res = await fetch(`${API_URL}/inventario/${id}`, {
+          method: 'DELETE',
+          headers: { 'Authorization': `Bearer ${token}` }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al eliminar');
+
+        showAlert('Elemento eliminado del inventario');
+        cargarInventario();
+      } catch (err) {
+        showAlert(err.message, true);
+      }
+    }
+
+    // Función para Solicitar Insumo
+    async function solicitarItem(id) {
+      const cantidad = prompt('¿Qué cantidad deseas solicitar?');
+      if (!cantidad || isNaN(cantidad) || cantidad <= 0) return;
+
+      const token = localStorage.getItem('jwt_token');
+
+      try {
+        const res = await fetch(`${API_URL}/solicitudes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ inventarioId: id, cantidadSolicitada: cantidad })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al solicitar');
+
+        showAlert('¡Solicitud procesada con éxito!');
+        cargarInventario();
+      } catch (err) {
+        showAlert(err.message, true);
+      }
+    }
+
+    // Registro de Donación
+    donationForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const token = localStorage.getItem('jwt_token');
+      const concepto = document.getElementById('concepto').value;
+      const cantidad = document.getElementById('cantidad').value;
+      const categoria = document.getElementById('categoria').value;
+
+      try {
+        const res = await fetch(`${API_URL}/donaciones`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ concepto, cantidad, categoria })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al registrar donación');
+
+        showAlert('¡Donación registrada e inventario actualizado!');
+        donationForm.reset();
+        cargarInventario();
+      } catch (err) {
+        showAlert(err.message, true);
+      }
+    });
+  </script>
+</body>
+</html>

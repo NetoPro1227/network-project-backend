@@ -181,4 +181,46 @@ app.get('/', (req, res) => {
   res.status(200).send('Servidor ejecutándose correctamente');
 });
 
+// 1. Eliminar elemento del inventario (SOLO ADMINISTRADORES)
+app.delete('/api/inventario/:id', authenticateToken, authorizeRoles('ADMIN'), (req, res) => {
+  const itemId = parseInt(req.params.id);
+  const index = inventoryDB.findIndex(i => i.id === itemId);
+
+  if (index === -1) {
+    return res.status(404).json({ error: 'Elemento no encontrado en el inventario' });
+  }
+
+  inventoryDB.splice(index, 1);
+  res.json({ message: 'Elemento eliminado correctamente del inventario' });
+});
+
+// 2. Solicitar una donación / insumo del inventario
+app.post('/api/solicitudes', authenticateToken, authorizeRoles('DONANTE', 'ADMIN'), (req, res) => {
+  const { inventarioId, cantidadSolicitada } = req.body;
+  const cantidad = Number(cantidadSolicitada);
+
+  if (!inventarioId || !cantidad || cantidad <= 0) {
+    return res.status(400).json({ error: 'ID de inventario y cantidad válida son requeridos' });
+  }
+
+  const item = inventoryDB.find(i => i.id === parseInt(inventarioId));
+
+  if (!item) {
+    return res.status(404).json({ error: 'El producto solicitado no existe en el inventario' });
+  }
+
+  if (item.stock < cantidad) {
+    return res.status(400).json({ error: `Stock insuficiente. Solo quedan ${item.stock} unidades disponibles` });
+  }
+
+  // Descontar del inventario
+  item.stock -= cantidad;
+  item.ultimaActualizacion = new Date().toISOString();
+
+  res.json({
+    message: 'Solicitud aprobada y procesada con éxito',
+    stockRestante: item.stock
+  });
+});
+
 module.exports = app;
