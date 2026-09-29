@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Módulo de Donaciones e Inventario</title>
+    <style>
+        * { box-sizing: border-box; margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+        body { background-color: #f0f2f5; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .container { width: 100%; max-width: 800px; }
+        .card { background: white; padding: 25px; border-radius: 10px; box-shadow: 0 4px 12px rgba(0,0,0,0.1); margin-bottom: 20px; }
+        h2 { margin-bottom: 15px; color: #1a252f; border-bottom: 2px solid #007bff; padding-bottom: 5px; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; font-weight: 600; margin-bottom: 5px; color: #495057; }
+        input, select { width: 100%; padding: 10px; border: 1px solid #ced4da; border-radius: 5px; }
+        .btn { width: 100%; padding: 12px; background: #007bff; color: white; border: none; border-radius: 5px; font-weight: bold; cursor: pointer; }
+        .btn:hover { background: #0056b3; }
+        table { width: 100%; border-collapse: collapse; margin-top: 10px; }
+        th, td { border: 1px solid #dee2e6; padding: 10px; text-align: left; }
+        th { background: #e9ecef; }
+        .alert { padding: 10px; border-radius: 5px; margin-top: 10px; display: none; }
+        .alert-success { background: #d4edda; color: #155724; }
+        .alert-error { background: #f8d7da; color: #721c24; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Registro y Login -->
+    <div class="card" id="authSection">
+        <h2>1. Iniciar Sesión / Registro</h2>
+        <div class="form-group">
+            <label for="user">Usuario / Email:</label>
+            <input type="text" id="user" placeholder="ejemplo@correo.com">
+        </div>
+        <div class="form-group">
+            <label for="pass">Contraseña:</label>
+            <input type="password" id="pass" placeholder="******">
+        </div>
+        <button class="btn" onclick="login()" style="margin-bottom: 10px;">Iniciar Sesión</button>
+        <button class="btn" onclick="register()" style="background-color: #28a745;">Registrarse</button>
+        <div id="authMsg" class="alert"></div>
+    </div>
+
+    <!-- Módulo de Donaciones -->
+    <div class="card" id="donationSection">
+        <h2>2. Registrar Nueva Donación</h2>
+        <div class="form-group">
+            <label for="concepto">Concepto de Insumo / Recurso:</label>
+            <input type="text" id="concepto" placeholder="Ej. Cobijas, Medicamentos, Alimentos">
+        </div>
+        <div class="form-group">
+            <label for="cantidad">Cantidad:</label>
+            <input type="number" id="cantidad" placeholder="10">
+        </div>
+        <div class="form-group">
+            <label for="categoria">Categoría:</label>
+            <select id="categoria">
+                <option value="General">General</option>
+                <option value="Viveres">Víveres</option>
+                <option value="Salud">Salud</option>
+                <option value="Ropa">Ropa</option>
+            </select>
+        </div>
+        <button class="btn" onclick="crearDonacion()">Enviar Donación</button>
+        <div id="donMsg" class="alert"></div>
+    </div>
+
+    <!-- Módulo de Inventario -->
+    <div class="card">
+        <h2>3. Inventario Disponible en Almacén</h2>
+        <button class="btn" onclick="cargarInventario()" style="background-color: #17a2b8; margin-bottom: 10px;">Actualizar Tabla de Inventario</button>
+        <table>
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Concepto</th>
+                    <th>Categoría</th>
+                    <th>Stock Disponible</th>
+                </tr>
+            </thead>
+            <tbody id="inventoryTable">
+                <tr><td colspan="4" style="text-align: center;">Inicia sesión para consultar el inventario</td></tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    let userToken = '';
+
+    function showMsg(id, msg, isSuccess) {
+        const el = document.getElementById(id);
+        el.className = `alert ${isSuccess ? 'alert-success' : 'alert-error'}`;
+        el.textContent = msg;
+        el.style.display = 'block';
+    }
+
+    async function register() {
+        const username = document.getElementById('user').value;
+        const password = document.getElementById('pass').value;
+        const res = await fetch('/api/auth/register', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password, role: 'DONANTE' })
+        });
+        const data = await res.json();
+        showMsg('authMsg', data.message || data.error, res.ok);
+    }
+
+    async function login() {
+        const username = document.getElementById('user').value;
+        const password = document.getElementById('pass').value;
+        const res = await fetch('/api/auth/login', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ username, password })
+        });
+        const data = await res.json();
+        if (res.ok) {
+            userToken = data.token;
+            showMsg('authMsg', '¡Sesión iniciada con éxito!', true);
+            cargarInventario();
+        } else {
+            showMsg('authMsg', data.error, false);
+        }
+    }
+
+    async function crearDonacion() {
+        if (!userToken) return showMsg('donMsg', 'Debes iniciar sesión primero', false);
+        const concepto = document.getElementById('concepto').value;
+        const cantidad = document.getElementById('cantidad').value;
+        const categoria = document.getElementById('categoria').value;
+
+        const res = await fetch('/api/donaciones', {
+            method: 'POST',
+            headers: { 
+                'Content-Type': 'application/json',
+                'Authorization': `Bearer ${userToken}`
+            },
+            body: JSON.stringify({ concepto, cantidad, categoria })
+        });
+        const data = await res.json();
+        showMsg('donMsg', data.message || data.error, res.ok);
+        if (res.ok) {
+            cargarInventario();
+        }
+    }
+
+    async function cargarInventario() {
+        if (!userToken) return;
+        const res = await fetch('/api/inventario', {
+            headers: { 'Authorization': `Bearer ${userToken}` }
+        });
+        const data = await res.json();
+        if (res.ok) {
+            const tbody = document.getElementById('inventoryTable');
+            tbody.innerHTML = '';
+            data.inventario.forEach(item => {
+                tbody.innerHTML += `
+                    <tr>
+                        <td>${item.id}</td>
+                        <td>${item.concepto}</td>
+                        <td>${item.categoria}</td>
+                        <td><strong>${item.stock}</strong></td>
+                    </tr>
+                `;
+            });
+        }
+    }
+</script>
+</body>
+</html>
