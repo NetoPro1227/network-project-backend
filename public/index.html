@@ -3,39 +3,165 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistema de Gestión de Donaciones</title>
+  <title>Network Project - Gestión de Donaciones</title>
   <style>
-    * { box-sizing: border-box; font-family: Arial, sans-serif; }
-    body { background-color: #f4f6f9; margin: 0; padding: 20px; display: flex; justify-content: center; }
-    .container { width: 100%; max-width: 850px; background: white; padding: 25px; border-radius: 8px; box-shadow: 0 2px 10px rgba(0,0,0,0.1); }
+    * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
+    
+    /* Fondo con degradado Azul y Verde para el Login/Registro */
+    body { 
+      background: linear-gradient(135deg, #0052D4 0%, #4364F7 50%, #6FB1FC 70%, #00C9A7 100%);
+      min-height: 100vh;
+      margin: 0; 
+      padding: 20px; 
+      display: flex; 
+      justify-content: center; 
+      align-items: center;
+    }
+
+    .container { 
+      width: 100%; 
+      max-width: 450px; 
+      background: rgba(255, 255, 255, 0.95); 
+      padding: 35px 30px; 
+      border-radius: 12px; 
+      box-shadow: 0 10px 25px rgba(0,0,0,0.2); 
+      transition: all 0.3s ease;
+    }
+
+    /* Estilos adaptables cuando se abre el panel principal */
+    .container.wide {
+      max-width: 900px;
+      background: #ffffff;
+    }
+
     .hidden { display: none !important; }
-    h2, h3 { color: #333; margin-top: 0; }
-    .form-group { margin-bottom: 15px; }
-    label { display: block; margin-bottom: 5px; font-weight: bold; }
-    input, select, button { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; font-size: 14px; }
-    button { background-color: #007bff; color: white; border: none; cursor: pointer; font-weight: bold; margin-top: 10px; }
-    button:hover { background-color: #0056b3; }
-    .btn-danger { background-color: #dc3545; padding: 6px 12px; width: auto; margin: 0; }
-    .btn-danger:hover { background-color: #bd2130; }
-    .btn-success { background-color: #28a745; padding: 6px 12px; width: auto; margin: 0; }
-    .btn-success:hover { background-color: #218838; }
-    .btn-logout { background-color: #dc3545; width: auto; float: right; margin-top: 0; }
-    .alert { padding: 10px; margin-bottom: 15px; border-radius: 4px; display: none; }
-    .alert-error { background-color: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
-    .alert-success { background-color: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+
+    /* Cabecera del Login con Logotipo y Nombre */
+    .brand-header {
+      text-align: center;
+      margin-bottom: 25px;
+    }
+
+    .brand-logo {
+      width: 65px;
+      height: 65px;
+      margin: 0 auto 10px auto;
+      display: block;
+    }
+
+    .brand-title {
+      color: #102a43;
+      font-size: 26px;
+      font-weight: 700;
+      margin: 0;
+      letter-spacing: 0.5px;
+    }
+
+    .brand-subtitle {
+      color: #627d98;
+      font-size: 14px;
+      margin-top: 5px;
+    }
+
+    h2 { color: #334e68; margin-top: 0; text-align: center; font-size: 20px; }
+    h3 { color: #334e68; margin-top: 0; }
+
+    .form-group { margin-bottom: 18px; }
+    label { display: block; margin-bottom: 6px; font-weight: 600; color: #486581; font-size: 14px; }
+    
+    input, select, button { 
+      width: 100%; 
+      padding: 12px; 
+      border: 1px solid #bcccdc; 
+      border-radius: 6px; 
+      font-size: 14px; 
+      outline: none;
+    }
+
+    input:focus, select:focus {
+      border-color: #00C9A7;
+      box-shadow: 0 0 0 3px rgba(0, 201, 167, 0.2);
+    }
+
+    /* Botón Principal con degradado Verde/Azul */
+    button[type="submit"] { 
+      background: linear-gradient(90deg, #00C9A7 0%, #0072ff 100%);
+      color: white; 
+      border: none; 
+      cursor: pointer; 
+      font-weight: 600; 
+      margin-top: 10px; 
+      font-size: 15px;
+      transition: transform 0.1s ease, opacity 0.2s ease;
+    }
+
+    button[type="submit"]:hover { 
+      opacity: 0.95; 
+      transform: translateY(-1px);
+    }
+
+    .btn-danger { background: #e53e3e; color: white; border: none; padding: 6px 12px; width: auto; margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600; }
+    .btn-danger:hover { background: #c53030; }
+    
+    .btn-success { background: #00C9A7; color: white; border: none; padding: 6px 12px; width: auto; margin: 0; cursor: pointer; border-radius: 4px; font-weight: 600; }
+    .btn-success:hover { background: #00b394; }
+    
+    .btn-secondary { background: #829ab1; color: white; border: none; cursor: pointer; border-radius: 4px; }
+    .btn-secondary:hover { background: #627d98; }
+    
+    .btn-logout { background: #e53e3e; color: white; border: none; width: auto; float: right; margin-top: 0; padding: 8px 16px; cursor: pointer; border-radius: 4px; font-weight: 600; }
+
+    .alert { padding: 12px; margin-bottom: 20px; border-radius: 6px; display: none; font-size: 14px; text-align: center; }
+    .alert-error { background-color: #fed7d7; color: #9b2c2c; border: 1px solid #feb2b2; }
+    .alert-success { background-color: #c6f6d5; color: #22543d; border: 1px solid #9ae6b4; }
+
     table { width: 100%; border-collapse: collapse; margin-top: 15px; }
-    th, td { border: 1px solid #ddd; padding: 10px; text-align: left; vertical-align: middle; }
-    th { background-color: #f8f9fa; }
-    .header-panel { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #eee; padding-bottom: 10px; margin-bottom: 20px; }
-    .toggle-text { text-align: center; margin-top: 15px; font-size: 14px; }
-    .toggle-text a { color: #007bff; text-decoration: none; font-weight: bold; cursor: pointer; }
-    .role-badge { background: #e2e3e5; padding: 4px 8px; border-radius: 4px; font-size: 12px; font-weight: bold; }
+    th, td { border: 1px solid #e2e8f0; padding: 12px; text-align: left; vertical-align: middle; }
+    th { background-color: #f7fafc; color: #4a5568; }
+
+    .header-panel { display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid #edf2f7; padding-bottom: 15px; margin-bottom: 20px; }
+    
+    .toggle-text { text-align: center; margin-top: 20px; font-size: 14px; color: #627d98; }
+    .toggle-text a { color: #0072ff; text-decoration: none; font-weight: 600; cursor: pointer; }
+    .toggle-text a:hover { text-decoration: underline; }
+
+    .role-badge { background: #e2e8f0; color: #2d3748; padding: 4px 10px; border-radius: 20px; font-size: 12px; font-weight: 700; margin-left: 10px; }
+
+    /* Modal */
+    .modal-backdrop {
+      position: fixed;
+      top: 0; left: 0; width: 100%; height: 100%;
+      background: rgba(15, 23, 42, 0.6);
+      display: flex; justify-content: center; align-items: center;
+      z-index: 1000;
+    }
+    .modal-content {
+      background: white; padding: 25px; border-radius: 10px;
+      width: 90%; max-width: 400px; box-shadow: 0 10px 25px rgba(0,0,0,0.3);
+    }
+    .modal-actions { display: flex; gap: 10px; margin-top: 20px; }
   </style>
 </head>
 <body>
 
-  <div class="container">
+  <div class="container" id="mainContainer">
     <div id="alertBox" class="alert"></div>
+
+    <!-- CABECERA PRINCIPAL CON LOGO Y NOMBRE -->
+    <div class="brand-header" id="brandHeader">
+      <!-- LOGOTIPO SVG (Red / Network) -->
+      <svg class="brand-logo" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="32" cy="14" r="8" fill="#00C9A7"/>
+        <circle cx="14" cy="46" r="8" fill="#0072ff"/>
+        <circle cx="50" cy="46" r="8" fill="#0072ff"/>
+        <line x1="32" y1="14" x2="14" y2="46" stroke="#00C9A7" stroke-width="4"/>
+        <line x1="32" y1="14" x2="50" y2="46" stroke="#00C9A7" stroke-width="4"/>
+        <line x1="14" y1="46" x2="50" y2="46" stroke="#0072ff" stroke-width="4"/>
+        <circle cx="32" cy="30" r="4" fill="#ffffff" stroke="#0052D4" stroke-width="3"/>
+      </svg>
+      <h1 class="brand-title">NETWORK PROJECT</h1>
+      <p class="brand-subtitle">Plataforma de Gestión de Donaciones</p>
+    </div>
 
     <!-- VISTA 1: INICIO DE SESIÓN -->
     <div id="loginSection">
@@ -49,7 +175,7 @@
           <label for="loginPassword">Contraseña</label>
           <input type="password" id="loginPassword" required placeholder="Ingresa tu contraseña">
         </div>
-        <button type="submit">Iniciar Sesión</button>
+        <button type="submit">Ingresar al Sistema</button>
       </form>
       <div class="toggle-text">
         ¿No tienes una cuenta? <a id="showRegister">Registrarse aquí</a>
@@ -69,7 +195,7 @@
           <input type="password" id="regPassword" required placeholder="Crea una contraseña">
         </div>
         <div class="form-group">
-          <label for="regRole">Rol</label>
+          <label for="regRole">Rol de Usuario</label>
           <select id="regRole">
             <option value="DONANTE">Donante</option>
             <option value="ADMIN">Administrador</option>
@@ -86,15 +212,15 @@
     <div id="appSection" class="hidden">
       <div class="header-panel">
         <div>
-          <h2 style="display:inline;">Panel Principal</h2>
+          <h2 style="display:inline; text-align:left;">Panel de Control</h2>
           <span id="userRoleBadge" class="role-badge"></span>
         </div>
         <button class="btn-logout" id="btnLogout">Cerrar Sesión</button>
       </div>
 
       <!-- Formulario para Registrar Donación -->
-      <div style="background: #eef2f5; padding: 15px; border-radius: 6px; margin-bottom: 25px;">
-        <h3>Registrar Nueva Donación</h3>
+      <div style="background: #f7fafc; padding: 20px; border-radius: 8px; margin-bottom: 25px; border: 1px solid #edf2f7;">
+        <h3 style="margin-bottom:15px;">Registrar Nueva Donación</h3>
         <form id="donationForm">
           <div class="form-group">
             <label for="concepto">Concepto / Bien</label>
@@ -129,9 +255,31 @@
     </div>
   </div>
 
+  <!-- VENTANA MODAL PARA SOLICITAR DONACIÓN -->
+  <div id="requestModal" class="modal-backdrop hidden">
+    <div class="modal-content">
+      <h3 id="modalItemTitle">Solicitar Donación</h3>
+      <p id="modalItemStock" style="color: #627d98; font-size: 14px; margin-bottom: 15px;"></p>
+      
+      <form id="requestForm">
+        <input type="hidden" id="modalItemId">
+        <div class="form-group">
+          <label for="modalCantidad">¿Cuántas deseas solicitar?</label>
+          <input type="number" id="modalCantidad" min="1" required placeholder="Ingresa la cantidad">
+        </div>
+        <div class="modal-actions">
+          <button type="submit" class="btn-success">Confirmar Solicitud</button>
+          <button type="button" id="btnCancelModal" class="btn-secondary">Cancelar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+
   <script>
     const API_URL = 'http://localhost:3000/api';
 
+    const mainContainer = document.getElementById('mainContainer');
+    const brandHeader = document.getElementById('brandHeader');
     const loginSection = document.getElementById('loginSection');
     const registerSection = document.getElementById('registerSection');
     const appSection = document.getElementById('appSection');
@@ -147,7 +295,14 @@
     const inventoryTable = document.getElementById('inventoryTable');
     const userRoleBadge = document.getElementById('userRoleBadge');
 
-    // Función para obtener el rol decodificando el JWT
+    const requestModal = document.getElementById('requestModal');
+    const requestForm = document.getElementById('requestForm');
+    const modalItemTitle = document.getElementById('modalItemTitle');
+    const modalItemStock = document.getElementById('modalItemStock');
+    const modalItemId = document.getElementById('modalItemId');
+    const modalCantidad = document.getElementById('modalCantidad');
+    const btnCancelModal = document.getElementById('btnCancelModal');
+
     function getUserRole() {
       const token = localStorage.getItem('jwt_token');
       if (!token) return null;
@@ -234,11 +389,15 @@
       localStorage.removeItem('jwt_token');
       appSection.classList.add('hidden');
       loginSection.classList.remove('hidden');
+      brandHeader.classList.remove('hidden');
+      mainContainer.classList.remove('wide');
     });
 
     function mostrarPanelPrincipal() {
       loginSection.classList.add('hidden');
       registerSection.classList.add('hidden');
+      brandHeader.classList.add('hidden');
+      mainContainer.classList.add('wide');
       appSection.classList.remove('hidden');
       
       const role = getUserRole();
@@ -246,7 +405,7 @@
       cargarInventario();
     }
 
-    // Cargar Inventario con Acciones según el Rol
+    // Cargar Inventario
     async function cargarInventario() {
       const token = localStorage.getItem('jwt_token');
       const role = getUserRole();
@@ -266,7 +425,7 @@
             if (role === 'ADMIN') {
               accionBtn = `<button class="btn-danger" onclick="eliminarItem(${item.id})">Eliminar</button>`;
             } else {
-              accionBtn = `<button class="btn-success" onclick="solicitarItem(${item.id})">Solicitar</button>`;
+              accionBtn = `<button class="btn-success" onclick="abrirModalSolicitud(${item.id}, '${item.concepto}', ${item.stock})">Solicitar</button>`;
             }
 
             inventoryTable.innerHTML += `
@@ -287,7 +446,45 @@
       }
     }
 
-    // Función para Eliminar Insumo (Solo ADMIN)
+    function abrirModalSolicitud(id, concepto, stock) {
+      modalItemId.value = id;
+      modalItemTitle.textContent = `Solicitar: ${concepto}`;
+      modalItemStock.textContent = `Stock disponible: ${stock} unidades`;
+      modalCantidad.value = '';
+      modalCantidad.max = stock;
+      requestModal.classList.remove('hidden');
+    }
+
+    btnCancelModal.addEventListener('click', () => {
+      requestModal.classList.add('hidden');
+    });
+
+    requestForm.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const id = modalItemId.value;
+      const cantidad = modalCantidad.value;
+      const token = localStorage.getItem('jwt_token');
+
+      try {
+        const res = await fetch(`${API_URL}/solicitudes`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${token}`
+          },
+          body: JSON.stringify({ inventarioId: id, cantidadSolicitada: cantidad })
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.error || 'Error al procesar la solicitud');
+
+        showAlert('¡Solicitud aceptada! Los insumos han sido descontados del inventario.');
+        requestModal.classList.add('hidden');
+        cargarInventario();
+      } catch (err) {
+        showAlert(err.message, true);
+      }
+    });
+
     async function eliminarItem(id) {
       if (!confirm('¿Seguro que deseas eliminar este elemento del inventario?')) return;
       const token = localStorage.getItem('jwt_token');
@@ -307,33 +504,6 @@
       }
     }
 
-    // Función para Solicitar Insumo
-    async function solicitarItem(id) {
-      const cantidad = prompt('¿Qué cantidad deseas solicitar?');
-      if (!cantidad || isNaN(cantidad) || cantidad <= 0) return;
-
-      const token = localStorage.getItem('jwt_token');
-
-      try {
-        const res = await fetch(`${API_URL}/solicitudes`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Authorization': `Bearer ${token}`
-          },
-          body: JSON.stringify({ inventarioId: id, cantidadSolicitada: cantidad })
-        });
-        const data = await res.json();
-        if (!res.ok) throw new Error(data.error || 'Error al solicitar');
-
-        showAlert('¡Solicitud procesada con éxito!');
-        cargarInventario();
-      } catch (err) {
-        showAlert(err.message, true);
-      }
-    }
-
-    // Registro de Donación
     donationForm.addEventListener('submit', async (e) => {
       e.preventDefault();
       const token = localStorage.getItem('jwt_token');
